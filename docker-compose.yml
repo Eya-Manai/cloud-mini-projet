@@ -1,0 +1,100 @@
+services:
+
+  db:
+    image: postgres:14
+    environment:
+      POSTGRES_DB: tasks
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - backend          
+
+  redis:
+    image: redis:latest
+    networks:
+      - backend
+
+  app1:
+    build: ./app
+    environment:
+      DATABASE_URL: postgresql://admin:admin@db:5432/tasks
+      REDIS_HOST: redis
+    depends_on:
+      - db
+      - redis
+    networks:
+      - backend
+
+  app2:
+    build: ./app
+    environment:
+      DATABASE_URL: postgresql://admin:admin@db:5432/tasks
+      REDIS_HOST: redis
+    depends_on:
+      - db
+      - redis
+    networks:
+      - backend
+
+  app3:
+    build: ./app
+    environment:
+      DATABASE_URL: postgresql://admin:admin@db:5432/tasks
+      REDIS_HOST: redis
+    depends_on:
+      - db
+      - redis
+    networks:
+      - backend
+
+  nginx:
+    build: ./nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - app1
+      - app2
+      - app3
+    networks:
+      - backend
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - backend
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    depends_on:
+      - prometheus
+    networks:
+      - backend
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    ports:
+      - "8080:8080"
+    networks:
+      - backend
+
+volumes:
+  db-data:
+
+networks:
+  backend:
+    driver: bridge
