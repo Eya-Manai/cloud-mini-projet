@@ -28,12 +28,12 @@ def init_db():
         try:
             with app.app_context():
                 db.create_all()
-            print("✅ Base de données connectée !")
+            print("Base de données connectée !")
             return
         except Exception as e:
-            print(f"⏳ Attente DB... ({e})")
+            print(f" Attente DB... ({e})")
             retries -= 1
-            time.sleep(5)   # ← augmenté de 3 à 5 secondes
+            time.sleep(5) 
     print("❌ Impossible de connecter la base de données")
 
 init_db()

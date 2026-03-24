@@ -1,7 +1,7 @@
 services:
 
   db:
-    image: postgres:14
+    image: postgres:14-alpine
     environment:
       POSTGRES_DB: tasks
       POSTGRES_USER: admin
@@ -9,7 +9,7 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
     networks:
-      - backend          
+      - backend
 
   redis:
     image: redis:latest
@@ -18,6 +18,8 @@ services:
 
   app1:
     build: ./app
+    ports:
+      - "5001:5000"
     environment:
       DATABASE_URL: postgresql://admin:admin@db:5432/tasks
       REDIS_HOST: redis
@@ -52,7 +54,7 @@ services:
   nginx:
     build: ./nginx
     ports:
-      - "80:80"
+      - "80:80"        # ← port 80 uniquement
     depends_on:
       - app1
       - app2
@@ -88,7 +90,7 @@ services:
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
     ports:
-      - "8080:8080"
+      - "8081:8080"    
     networks:
       - backend
 
